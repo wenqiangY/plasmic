@@ -6,6 +6,7 @@ RUN apk add --no-cache make~=4 bubblewrap~=0.11 python3 build-base bash
 WORKDIR /app/wab
 COPY wab/package.json wab/yarn.lock ./
 COPY wab/patches/ ./patches/
+RUN yarn config set registry https://registry.npmmirror.com
 RUN yarn install --frozen-lockfile && yarn cache clean
 COPY wab/ .
 RUN mkdir -p src/wab/gen && make
@@ -19,11 +20,13 @@ RUN apk add --no-cache make~=4 bubblewrap~=0.11 python3 build-base bash
 WORKDIR /app/loader-bundle-env
 COPY loader-bundle-env/package.json loader-bundle-env/yarn.lock ./
 COPY loader-bundle-env/patches/ ./patches/
+RUN yarn config set registry https://registry.npmmirror.com
 RUN yarn install --frozen-lockfile && yarn cache clean
 
 # loader-html-hydrate is expected to be a peer folder to wab, so we copy it there
 WORKDIR /app/loader-html-hydrate
 COPY loader-html-hydrate/package.json loader-html-hydrate/yarn.lock ./
+RUN yarn config set registry https://registry.npmmirror.com
 RUN yarn install --frozen-lockfile && yarn cache clean
 
 WORKDIR /app/loader-bundle-env
@@ -42,6 +45,7 @@ EXPOSE 3004
 WORKDIR /app/wab
 COPY wab/package.json wab/yarn.lock ./
 COPY wab/patches/ ./patches/
+RUN yarn config set registry https://registry.npmmirror.com
 RUN yarn install --production --frozen-lockfile && yarn cache clean
 COPY wab/ .
 COPY --from=builder /app/wab/ .
