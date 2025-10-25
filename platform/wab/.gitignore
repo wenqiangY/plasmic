@@ -25,6 +25,9 @@ import-graph.json
 import-chains.png
 import-chains.dot
 .env
+.env.local
+.env.production
+.env.staging
 
 # Code coverage
 coverage/
