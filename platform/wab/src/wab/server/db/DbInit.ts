@@ -1,5 +1,4 @@
-// Must initialize globals early so that imported code can detect what
-// environment we're running in.
+// 必须早期初始化全局变量，以便导入的代码能够检测到我们运行的环境
 import { loadConfig } from "@/wab/server/config";
 import { getLastBundleVersion } from "@/wab/server/db/BundleMigrator";
 import { ensureDbConnection } from "@/wab/server/db/DbCon";
@@ -44,25 +43,25 @@ async function main() {
 export async function seedTestDb(em: EntityManager) {
   const db = new DbMgr(em, SUPER_USER);
 
-  // admin@admin.example.com is an admin user because of its admin.com domain name
-  // (see `isCoreTeamEmail`), meaning it will receive elevated privileges and
-  // doesn't behave like normal accounts.
-  // AVOID TESTING WITH THIS ACCOUNT.
+  // admin@admin.example.com 是管理员用户，因为它的 admin.com 域名
+  // (参见 `isCoreTeamEmail`)，这意味着它将获得提升的权限，
+  // 不会像普通账户那样行为。
+  // 避免使用此账户进行测试。
   const { user: adminUser } = await seedTestUserAndProjects(em, {
     email: "admin@admin.example.com",
     firstName: "Plasmic",
-    lastName: "Admin",
+    lastName: "管理员",
   });
-  // user@example.com and user2@example.com behave like normal accounts.
+  // user@example.com 和 user2@example.com 表现得像普通账户。
   const { user: user1 } = await seedTestUserAndProjects(em, {
     email: "user@example.com",
     firstName: "Plasmic",
-    lastName: "User",
+    lastName: "用户",
   });
   const { user: user2 } = await seedTestUserAndProjects(em, {
     email: "user2@example.com",
     firstName: "Plasmic",
-    lastName: "User 2",
+    lastName: "用户 2",
   });
 
   const { enterpriseFt, teamFt, proFt, starterFt } = await seedTestFeatureTiers(
@@ -72,30 +71,30 @@ export async function seedTestDb(em: EntityManager) {
   const enterpriseOrg = await seedTeam(
     em,
     user1,
-    "Test Enterprise Org",
+    "测试企业组织",
     enterpriseFt
   );
   await seedTeam(
     em,
     user1,
-    "Test Enterprise Child Org A",
+    "测试企业子组织 A",
     enterpriseFt,
     enterpriseOrg
   );
   await seedTeam(
     em,
     user1,
-    "Test Enterprise Child Org B",
+    "测试企业子组织 B",
     enterpriseFt,
     enterpriseOrg
   );
-  await seedTeam(em, user1, "Test Scale Org", teamFt);
-  await seedTeam(em, user2, "Test Pro Org", proFt);
-  await seedTeam(em, user2, "Test Starter Org", starterFt);
+  await seedTeam(em, user1, "测试规模组织", teamFt);
+  await seedTeam(em, user2, "测试专业组织", proFt);
+  await seedTeam(em, user2, "测试入门组织", starterFt);
 
   await seedTestPromotionCodes(em);
 
-  // Seed the special pkgs, which must be done after some users have been created
+  // 初始化特殊包，必须在创建一些用户后完成
   const sysnames: InsertableId[] = [PLUME_INSERTABLE_ID, PLEXUS_INSERTABLE_ID];
   await Promise.all(
     sysnames.map(async (sysname) => await new PkgMgr(db, sysname).seedPkg())
@@ -112,19 +111,19 @@ export async function seedTestDb(em: EntityManager) {
             type: "ui-kit",
             isInstallOnly: true,
             isNew: true,
-            name: "Plasmic Design System",
+            name: "Plasmic 设计系统",
             projectId: plexusBundleInfo.projectId,
             imageUrl: "https://static1.plasmic.app/plasmic-logo.png",
             entryPoint: {
               type: "arena",
-              name: "Components",
+              name: "组件",
             },
           },
         ]),
         insertableTemplates: ensureType<InsertableTemplatesGroup | undefined>({
           type: "insertable-templates-group",
           name: "root",
-          // The below achieves the following for each plexus component:
+          // 以下为每个 plexus 组件实现以下功能：
           // {
           //   "type": "insertable-templates-component",
           //   "projectId": "mSQqkNd8CL5vNdDTXJPXfU",
@@ -135,7 +134,7 @@ export async function seedTestDb(em: EntityManager) {
           items: [
             {
               type: "insertable-templates-group" as const,
-              name: "Components",
+              name: "组件",
               items: Object.keys(defaultComponentKinds).map((item) => ({
                 componentName: startCase(item),
                 templateName: `${plexusBundleInfo.sysname}/${kebabCase(item)}`,
@@ -151,11 +150,11 @@ export async function seedTestDb(em: EntityManager) {
         }),
         insertPanelContent: {
           aliases: {
-            // Components provided by @plasmicapp/react-web
+            // 由 @plasmicapp/react-web 提供的组件
             dataFetcher: "builtincc:plasmic-data-source-fetcher",
             pageMeta: "builtincc:hostless-plasmic-head",
 
-            // Default components
+            // 默认组件
             ...Object.keys(defaultComponentKinds).reduce((acc, defaultKind) => {
               acc[defaultKind] = `default:${defaultKind}`;
               return acc;
@@ -177,15 +176,15 @@ export async function seedTestDb(em: EntityManager) {
                 "image",
                 "icon",
               ],
-              // This may use Plexus or Plume depending on the `plexus` devflag
-              "Customizable components": Object.keys(defaultComponentKinds),
-              Advanced: ["pageMeta", "dataFetcher"],
+              // 这可能使用 Plexus 或 Plume，取决于 `plexus` 开发标志
+              "可定制组件": Object.keys(defaultComponentKinds),
+              高级: ["pageMeta", "dataFetcher"],
             },
           },
-          // Install all button
+          // 安装所有按钮
           builtinSectionsInstallables: {
-            // We only need it for Plexus
-            "Customizable components": plexusBundleInfo.projectId,
+            // 我们只需要它用于 Plexus
+            "可定制组件": plexusBundleInfo.projectId,
           },
         },
       },
@@ -211,7 +210,7 @@ export async function seedTestUserAndProjects(
     email: userInfo.email,
     password: userInfo.password || DEFAULT_DEV_PASSWORD,
     firstName: userInfo.firstName || "Plasmic",
-    lastName: userInfo.lastName || "User",
+    lastName: userInfo.lastName || "用户",
     needsIntroSplash: false,
     needsSurvey: false,
     needsTeamCreationPrompt: false,
@@ -220,11 +219,11 @@ export async function seedTestUserAndProjects(
   const db = new DbMgr(em, normalActor(user.id));
   for (let projectNum = 1; projectNum <= numProjects; ++projectNum) {
     const { project } = await db.createProject({
-      name: `Plasmic Project ${projectNum}`,
+      name: `Plasmic 项目 ${projectNum}`,
     });
     await db.updateProject({
       id: project.id,
-      name: `The real Plasmic project ${projectNum}`,
+      name: `真正的 Plasmic 项目 ${projectNum}`,
     });
     await db.saveProjectRev({
       projectId: project.id,
@@ -233,7 +232,7 @@ export async function seedTestUserAndProjects(
     });
     await db.getLatestProjectRev(project.id);
 
-    // Need to set this back to the normal placeholder.
+    // 需要将其设置回正常的占位符。
     const site = createSite();
     const siteBundle = new Bundler().bundle(
       site,
@@ -286,7 +285,7 @@ async function seedTestPromotionCodes(em: EntityManager) {
   const db0 = new DbMgr(em, SUPER_USER);
   await db0.createPromotionCode(
     "FREETESTING",
-    "FREETESTING - Free trial for testing",
+    "FREETESTING - 免费测试试用",
     30,
     null
   );

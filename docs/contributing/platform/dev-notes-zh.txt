@@ -1,0 +1,43 @@
+React 陷阱
+==========
+
+- 由于某种原因，如果组件在第一次渲染时崩溃（在 ViewInitializer 的第一个 `setState({viewCtx})` 内），
+  这会导致一些非常令人困惑的问题，尝试重新加载 base-pkg 并从顶部再次刷新应用程序。
+  这可能表现为尝试渲染外部组件，然后在 ForeignComponents.forValComponent() 中找不到组件。
+  当我启用 CreateTab 更早渲染时遇到了这个问题（即使没有选择活动时也渲染画廊，
+  但 CreateItem 中有一个愚蠢的错误触发了上述症状）
+
+库陷阱
+======
+
+- 不要从 "jquery" 导入，始终使用 deps 中的那个。它们有不同的插件，
+  但更微妙的是，它们有不同的 .data() 存储。
+
+WAB 陷阱
+========
+
+- Tpls.ancestors 不做任何过滤，但 canvasCtx().valAncestors() 过滤掉 valUserRoot！
+  （这很好，因为在隔离组件编辑模式和正常页面编辑模式中，它们更像是哨兵。）
+- Tagger 实际上会在第一次渲染时标记 React Bootstrap Modal 的门户 div
+  （如在 componentDidMount 中看到的），但不会在后续更新中重新显示 div
+  （componentDidUpdate 只看到 null）。我无法在 WAB 之外重现那个初始标记
+  ---参见例如 https://codesandbox.io/s/q8828q9p69。所以不要依赖那个初始标记。
+- 目前，当你插入一个 Modal 时，你可能有这个 val 树：
+
+    ValComponent for Modal
+      ValComponent for ModalBody
+        ValTag for div
+
+  它渲染为这些 React 组件：
+
+    CanvasElement
+      Sub
+        Modal
+          ModalBody <-- Modal 期望 ModalBody 是其直接子元素
+            Sup
+              CanvasElement
+                div
+
+  由于那个父子要求，我们不幸不能插入一个 CanvasElement，
+  这会让我们更容易将 DOM 节点（通过 .getDOMNode() 或 .findDOMNode()）
+  与那个 ValComponent 关联（而不覆盖更多 bsRole 设置---这可能是最终要考虑的好事）。

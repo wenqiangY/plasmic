@@ -1,9 +1,9 @@
 {
   "type": "postgres",
   "host": "localhost",
-  "username": "wab",
-  "database": "wab",
-  "password": "SEKRET",
+  "username": "username",
+  "database": "flow-studio",
+  "password": "password",
   "synchronize": false,
   "dropSchema": false,
   "logging": false,
